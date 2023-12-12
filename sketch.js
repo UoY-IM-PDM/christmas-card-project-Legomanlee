@@ -1,34 +1,54 @@
-let penguin1Image, penguin2Image, villageImage, christmasHouse, christmasMusic;
+let penguin1Image, penguin2Image, villageImage, christmasHouse, christmasMusic, skatingBear, santa, angrySanta, snowSound, hohoho, santaCrash, snowBackground, merryChristmas;
 let penguin1X = 5;
 let penguin1Y = 50;
 let penguin1Lives =  5
 let speed = 5
+let maxSnowballSpeed = 12
+let snowballSpeed = 2
 let penguin2X = 650;
 let penguin2Y = 550
 let penguin2Lives = 5
+let startOpacity = 255
+let villageYCoordinate = 50
+let skatingBearX = 0
+let skatingBear2X = 500
+let bearSpeed = 2
+let santaX = 100
+let santaY = 320
+let santaSpeed = 1
+let santaHealth = 0
+let santaMaxHealth = 50
 let snowballs1 = [{
     x: penguin1X,
     y: penguin1Y,
-    speedY: -speed,
+    speedY: -snowballSpeed,
 
 }]
 let snowballs2 = [{
     x: penguin2X,
     y: penguin2Y,
-    speedY: -speed,
+    speedY: -snowballSpeed,
 
 }]
 
 function preload(){
-    penguin1Image = loadImage("image-from-rawpixel-id-6536249-original.png")
+    penguin1Image = loadImage("images/image-from-rawpixel-id-6536249-original.png")
     penguin1Image.loadPixels()
-    penguin2Image = loadImage("Updated blue penguin.png")
+    penguin2Image = loadImage("images/Updated blue penguin.png")
     penguin2Image.loadPixels()
-    villageImage = loadImage("image-from-rawpixel-id-12087023-original.png")
+    villageImage = loadImage("images/image-from-rawpixel-id-12087023-original.png")
     villageImage.loadPixels()
-    christmasHouse = loadImage("11458PICVq9GdV14NTijY_PIC2018.png")
-    christmasHouse.loadPixels()
-    christmasMusic = loadSound("711984__audiocoffee__christmas-loop.wav")
+    skatingBear = loadImage("images/skatingBearImage.png")
+    skatingBear.loadPixels()
+    santa = loadImage("images/image-from-rawpixel-id-10192229-original.png")
+    santa.loadPixels()
+    angrySanta = loadImage("images/image-from-rawpixel-id-1230291-original.png")
+    angrySanta.loadPixels()
+    snowSound = loadSound("audio/HitBySnowball.wav")
+    christmasMusic = loadSound("audio/711984__audiocoffee__christmas-loop.wav")
+    hohoho = loadSound("audio/hohoho.wav")
+    santaCrash = loadSound("audio/SantaCrash.wav")
+    merryChristmas = loadSound("audio/MerryChristmas.mp3")
 }
 
 function setup(){
@@ -40,10 +60,40 @@ function draw(){
     currentLifeCount()
     penguinPlayer1()
     penguinPlayer2()
+    movingSanta()
+    movingBear()
+    movingBear2()
     snowball1()
     snowball2()
     hitPenguin()
     deadPenguin()
+    deadSanta()
+    startGame()
+}
+
+function startGame(){
+    fill(255, 255, 255, startOpacity)
+    square(width/2, height/2, width)
+    fill(0, 100, 0, startOpacity)
+    image(villageImage, -150, villageYCoordinate, villageImage.width/4, villageImage.height/4)
+    textSize(75)
+    text("SNOWBALL FIGHT!", 60, 100)
+    textSize(70)
+    text("Click Anywhere to Start!", 25, height - 20)
+    textSize(25)
+    text("Red Penguin - Use 'wasd' keys to move and e to fire snowballs", 50, height - 125)
+    text("Blue Penguin - Use arrow keys to move and / to fire snowballs", 55, height - 100)
+}
+
+function mouseClicked(){
+    if (!christmasMusic.isPlaying()){
+        christmasMusic.loop();
+    } else {
+        christmasMusic.pause()
+    }
+    villageYCoordinate = height
+    startOpacity = 0
+    background(255)
 }
 
 function theBackground(){
@@ -56,8 +106,35 @@ function theBackground(){
     rect(width/2, height/2 - 100, width, 100)
 }
 
-function tree(x, y, height, width){
+function movingBear(){
+    image(skatingBear, skatingBearX, height/2, skatingBear.width/8, skatingBear.height/8)
+    skatingBearX = skatingBearX + bearSpeed
+    if (skatingBearX > width){
+        skatingBearX = -100
+        if(speed <= maxSnowballSpeed){
+            speed = speed + 1
+        }
+    }
+}
 
+function movingBear2(){
+    image(skatingBear, skatingBear2X, height/2 - 200, skatingBear.width/8, skatingBear.height/8)
+    skatingBear2X = skatingBear2X - bearSpeed
+    if (skatingBear2X < -100){
+        skatingBear2X = width + 100
+    }
+}
+
+function movingSanta(){
+    image(santa, santaX, santaY, width/4, height/6)
+    santaX = santaX - 5
+    if (santaX < - 500){
+        santaX = width + 500
+    }
+    santaY = santaY + santaSpeed
+    if (santaY < 305 || santaY > 335){
+        santaSpeed = santaSpeed * -1
+    }
 }
 
 function penguinPlayer1(){
@@ -132,16 +209,44 @@ function hitPenguin(){
         if (snowballs2[i].y > penguin1Y && snowballs2[i].y < penguin1Y + penguin1Image.height/32 && snowballs2[i].x > penguin1X && snowballs2[i].x < penguin1X + penguin1Image.width/32){
             penguin1Lives = penguin1Lives - 1
             snowballs2.splice(i, 1)
+            snowSound.play()
         } else if (snowballs2[i].y < 0){
             snowballs2.splice(i, 1)
+        } else if (snowballs2[i].y > height/2 && snowballs2[i].y < height/2 + 100 && snowballs2[i].x > skatingBearX + 25 && snowballs2[i].x < skatingBearX + 100){
+            snowballs2.splice(i, 1)
+            snowSound.play()
+        } else if (snowballs2[i].y > height/2 - 200 && snowballs2[i].y < height/2 - 100 && snowballs2[i].x > skatingBear2X + 25 && snowballs2[i].x < skatingBear2X + 100){
+            snowballs2.splice(i, 1)
+            snowSound.play()
+        } else if (snowballs2[i].y > santaY && snowballs2[i].y < santaY + 100 && snowballs2[i].x > santaX && snowballs2[i].x < santaX + 200){
+            snowballs2.splice(i, 1)
+            santaHealth = santaHealth + 1
+            snowSound.play()
+            if (!hohoho.isPlaying()){
+                hohoho.play();
+            }
         }
     }
     for (let i = 0; i < snowballs1.length; i++){
         if (snowballs1[i].y > penguin2Y && snowballs1[i].y < penguin2Y + penguin2Image.height/32 && snowballs1[i].x > penguin2X && snowballs1[i].x < penguin2X + penguin2Image.width/32){
             penguin2Lives = penguin2Lives - 1
             snowballs1.splice(i, 1)
+            snowSound.play()
         } else if (snowballs1[i].y > height){
             snowballs1.splice(i, 1)
+        } else if (snowballs1[i].y > height/2 && snowballs1[i].y < height/2 + 100 && snowballs1[i].x > skatingBearX + 25 && snowballs1[i].x < skatingBearX + 100){
+            snowballs1.splice(i, 1)
+            snowSound.play()
+        } else if (snowballs1[i].y > height/2 - 200 && snowballs1[i].y < height/2 - 100 && snowballs1[i].x > skatingBear2X + 25 && snowballs1[i].x < skatingBear2X + 100){
+            snowballs1.splice(i, 1)
+            snowSound.play()
+        } else if (snowballs1[i].y > santaY + 25 && snowballs1[i].y < santaY + 125 && snowballs1[i].x > santaX && snowballs1[i].x < santaX + 200){
+            snowballs1.splice(i, 1)
+            santaHealth = santaHealth + 1
+            snowSound.play()
+            if (!hohoho.isPlaying()){
+                hohoho.play();
+            }
         }
     }
 }
@@ -157,21 +262,44 @@ function currentLifeCount(){
 }
 
 function deadPenguin(){
-    console.log(penguin1Lives, penguin2Lives)
-    if (penguin1Lives <= 0){
+    if (penguin1Lives <= 0 || penguin2Lives <= 0){
         fill(255)
         square(width/2, height/2, width)
-        fill(0)
-        text("GAME OVER. PLAYER 2 WINS!", width/2, height/2)
+        fill(0, 100, 0)
+        image(villageImage, -150, 50, villageImage.width/4, villageImage.height/4)
+        textSize(75)
+        text("Merry Christmas!", 100, 100)
+        textSize(25)
+        text("Reload to play again!", width/2 - 100, height - 75)
+        if (!merryChristmas.isPlaying()){
+            merryChristmas.play();
+        }
+    }
+    if (penguin1Lives <= 0){
+        fill(0, 0, 255)
+        textSize(45)
+        text("GAME OVER. BLUE PENGUIN WINS!", 15, height - 20)
     }
     if (penguin2Lives <= 0){
-        fill(255)
-        square(width/2, height/2, width)
-        fill(0)
-        text("GAME OVER. PLAYER 1 WINS!", width/2, height/2)
+        fill(255, 0, 0)
+        textSize(45)
+        text("GAME OVER. RED PENGUIN WINS!", 25, height - 20)
     }
 }
 
-function mouseClicked(){
-    christmasMusic.loop();
+function deadSanta(){
+    if (santaHealth > santaMaxHealth){
+        fill(255)
+        square(width/2, height/2, width)
+        image(angrySanta, 0, -50, angrySanta.width/6, angrySanta.height/6)
+        fill(0)
+        textSize(30)
+        text("I'M PUTTING YOU BOTH ON THE NAUGHTY LIST!", 45, height - 50)
+        textSize(25)
+        text("You hit Santa too many times, reload to try again!", 125, height - 15)
+        christmasMusic.pause()
+        if (!santaCrash.isPlaying()){
+            santaCrash.play();
+        }
+    }
 }
